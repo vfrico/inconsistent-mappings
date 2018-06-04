@@ -37,7 +37,7 @@ import static com.hp.hpl.jena.ontology.OntModelSpec.OWL_MEM_MICRO_RULE_INF;
 public class DBO {
 
 //    private static final String SPARQL_Endpoint = "http://4v.dia.fi.upm.es:8890/sparql";
-    private static final String SPARQL_Endpoint = "http://35.205.230.57:8890/sparql";
+    private static final String SPARQL_Endpoint = "http://35.233.98.119:8890/sparql";
 //    private static final String DBO_GRAGH = "http://dbpedia.org/o/201604";
 
 //    OntModel inf;
@@ -81,6 +81,41 @@ public class DBO {
         return SparqlUtils.ask(query, SPARQL_Endpoint);
 
     }
+
+    public static boolean areEquivalentClass(String classA, String classB) {
+
+        String query = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
+                "PREFIX dbo: <http://dbpedia.org/ontology/> " +
+                "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> " +
+                "PREFIX foaf: <http://xmlns.com/foaf/0.1/> " +
+                "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
+                "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
+                "ask { graph <http://dbpedia.org/ontology> " +
+                "{ " + classA + " owl:equivalentClass* " + classB + " } }";
+
+        //System.out.println(query);
+
+        return SparqlUtils.ask(query, SPARQL_Endpoint);
+
+    }
+    public static boolean areEquivalentProperties(String propA, String propB) {
+
+        String query = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
+                "PREFIX dbo: <http://dbpedia.org/ontology/> " +
+                "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> " +
+                "PREFIX foaf: <http://xmlns.com/foaf/0.1/> " +
+                "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
+                "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
+                "ask { graph <http://dbpedia.org/ontology> " +
+                "{ " + propA + " owl:equivalentProperty* " + propB + " } }";
+
+        //System.out.println(query);
+
+        return SparqlUtils.ask(query, SPARQL_Endpoint);
+
+    }
+
+
 
     public static String getDomain(String property) {
 

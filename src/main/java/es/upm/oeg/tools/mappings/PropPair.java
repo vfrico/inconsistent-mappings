@@ -27,6 +27,8 @@ public class PropPair {
     private String propA;
     private String propB;
 
+    private String anotacion;
+
     private long m1;
     private long m2;
     private long m3a;
@@ -35,6 +37,17 @@ public class PropPair {
     private long m5a;
     private long m5b;
 
+    private int tb1;
+    private int tb2;
+    private int tb3;
+    private int tb4;
+    private int tb5;
+    private int tb6;
+    private int tb7;
+    private int tb8;
+    private int tb9;
+    private int tb10;
+    private int tb11;
 
     public PropPair(String propA, String propB) {
         this.propA = propA;
@@ -162,6 +175,179 @@ public class PropPair {
         this.m5b = m5b;
     }
 
+    public int getTb1() {
+        return tb1;
+    }
+
+    public void setTb1(int tb1) {
+        this.tb1 = tb1;
+    }
+
+    public void setTb1(boolean tb1) {
+        if (tb1)
+            setTb1(1);
+        else
+            setTb1(0);
+    }
+
+    public int getTb2() {
+        return tb2;
+    }
+
+    public void setTb2(int tb2) {
+        this.tb2 = tb2;
+    }
+
+    public void setTb2(boolean tb2) {
+        if (tb2)
+            setTb2(1);
+        else
+            setTb2(0);
+    }
+
+    public int getTb3() {
+        return tb3;
+    }
+
+    public void setTb3(int tb3) {
+        this.tb3 = tb3;
+    }
+
+    public void setTb3(boolean tb3) {
+        if (tb3)
+            setTb3(1);
+        else
+            setTb3(0);
+    }
+
+    public int getTb4() {
+        return tb4;
+    }
+
+    public void setTb4(int tb4) {
+        this.tb4 = tb4;
+    }
+
+    public void setTb4(boolean tb4) {
+        if (tb4)
+            setTb4(1);
+        else
+            setTb4(0);
+    }
+
+    public int getTb5() {
+        return tb5;
+    }
+
+    public void setTb5(int tb5) {
+        this.tb5 = tb5;
+    }
+
+    public void setTb5(boolean tb5) {
+        if (tb5)
+            setTb5(1);
+        else
+            setTb5(0);
+    }
+
+    public int getTb6() {
+        return tb6;
+    }
+
+    public void setTb6(int tb6) {
+        this.tb6 = tb6;
+    }
+
+    public void setTb6(boolean tb6) {
+        if (tb6)
+            setTb6(1);
+        else
+            setTb6(0);
+    }
+
+    public int getTb7() {
+        return tb7;
+    }
+
+    public void setTb7(int tb7) {
+        this.tb7 = tb7;
+    }
+
+    public void setTb7(boolean tb7) {
+        if (tb7)
+            setTb7(1);
+        else
+            setTb7(0);
+    }
+
+    public int getTb8() {
+        return tb8;
+    }
+
+    public void setTb8(int tb8) {
+        this.tb8 = tb8;
+    }
+
+    public void setTb8(boolean tb8) {
+        if (tb8)
+            setTb8(1);
+        else
+            setTb8(0);
+    }
+
+    public int getTb9() {
+        return tb9;
+    }
+
+    public void setTb9(int tb9) {
+        this.tb9 = tb9;
+    }
+
+    public void setTb9(boolean tb9) {
+        if (tb9)
+            setTb9(1);
+        else
+            setTb9(0);
+    }
+
+    public int getTb10() {
+        return tb10;
+    }
+
+    public void setTb10(int tb10) {
+        this.tb10 = tb10;
+    }
+
+    public void setTb10(boolean tb10) {
+        if (tb10)
+            setTb10(1);
+        else
+            setTb10(0);
+    }
+
+    public int getTb11() {
+        return tb11;
+    }
+
+    public void setTb11(int tb11) {
+        this.tb11 = tb11;
+    }
+
+    public void setTb11(boolean tb11) {
+        if (tb11)
+            setTb11(1);
+        else
+            setTb11(0);
+    }
+
+    public String getAnotacion() {
+        return anotacion;
+    }
+
+    public void setAnotacion(String anotacion) {
+        this.anotacion = anotacion;
+    }
+
     @Override
     public boolean equals(Object obj) {
 
@@ -181,6 +367,10 @@ public class PropPair {
         } else {
             return false;
         }
+    }
+
+    public String toString() {
+        return templateA+"/"+propA+" -> "+templateB+"/"+propB+" ["+m1+"]";
     }
 }
 

@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 
@@ -38,7 +40,7 @@ import java.util.concurrent.ForkJoinPool;
 public class InconsistentMappings {
 
 //    public static final String SPARQL_ENDPOINT = "http://4v.dia.fi.upm.es:8890/sparql";
-    public static final String SPARQL_ENDPOINT = "http://35.205.230.57:8890/sparql";
+    public static final String SPARQL_ENDPOINT = "http://35.233.98.119:8890/sparql";
     //public static final String SPARQL_ENDPOINT = "http://172.17.0.1:8890/sparql";
 
     private static final String Q1_PATH = "src/main/resources/mappings/q1.rq";
@@ -52,7 +54,9 @@ public class InconsistentMappings {
     private static final String Q4_String;
     private static final String Q5_String;
 
-    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#,###,###,##0.0000");
+
+    private static final DecimalFormatSymbols symbolsDE_DE = DecimalFormatSymbols.getInstance(Locale.US);
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#,###,###,##0.0000", symbolsDE_DE);
 
     private static final Logger logger = LoggerFactory.getLogger(InconsistentMappings.class);
 
@@ -69,14 +73,14 @@ public class InconsistentMappings {
         }
     }
 
-    private String graph1;
-    private String graph2;
-    private String rGraph1;
-    private String rGraph2;
-    private String infoboxPrefix1;
-    private String infoboxPrefix2;
-    private String classGraph1;
-    private String classGraph2;
+    public static String graph1;
+    public static String graph2;
+    public static String rGraph1;
+    public static String rGraph2;
+    public static String infoboxPrefix1;
+    public static String infoboxPrefix2;
+    public static String classGraph1;
+    public static String classGraph2;
 
     BufferedWriter writer;
 
@@ -133,7 +137,19 @@ public class InconsistentMappings {
                     + ", " + "M3a"
                     + ", " + "M3b"
                     + ", " + "M5a"
-                    + ", " + "M5b");
+                    + ", " + "M5b"
+                    + ", " + "TB1"
+                    + ", " + "TB2"
+                    + ", " + "TB3"
+                    + ", " + "TB4"
+                    + ", " + "TB5"
+                    + ", " + "TB6"
+                    + ", " + "TB7"
+                    + ", " + "TB8"
+                    + ", " + "TB9"
+                    + ", " + "TB10"
+                    + ", " + "TB11"
+            );
             writer.newLine();
             writer.flush();
         } catch (IOException e) {
@@ -362,6 +378,8 @@ public class InconsistentMappings {
             propPair.setM5b(count);
         }
 
+        // Configure TB properties
+        fillTBProperties(propPair);
 
         synchronized (lock) {
             try {
@@ -388,6 +406,17 @@ public class InconsistentMappings {
                         + ", " + propPair.getM3b()
                         + ", " + propPair.getM5a()
                         + ", " + propPair.getM5b()
+                        + ", " + propPair.getTb1()
+                        + ", " + propPair.getTb2()
+                        + ", " + propPair.getTb3()
+                        + ", " + propPair.getTb4()
+                        + ", " + propPair.getTb5()
+                        + ", " + propPair.getTb6()
+                        + ", " + propPair.getTb7()
+                        + ", " + propPair.getTb8()
+                        + ", " + propPair.getTb9()
+                        + ", " + propPair.getTb10()
+                        + ", " + propPair.getTb11()
                 );
                 writer.newLine();
                 writer.flush();
@@ -397,8 +426,56 @@ public class InconsistentMappings {
         }
     }
 
+    public static void fillTBProperties(PropPair propPair) {
+        String pi = getPrefixedProperty(propPair.getPropA());
+        String pj = getPrefixedProperty(propPair.getPropB());
+        // TB1: 1 if Pi is subprop of Pj
+        propPair.setTb1(DBO.isSubProperty(pi, pj));
 
-    private static String getClass(String graph, String infobox) {
+        // TB2: 1 if Pj is subprop of pi
+        propPair.setTb2(DBO.isSubProperty(pj, pi));
+
+        String classi = getClass(classGraph1, infoboxPrefix1 + propPair.getTemplateA());
+        String classj = getClass(classGraph2, infoboxPrefix2 + propPair.getTemplateB());
+
+        // TB3: 1 if class corresponding are in the same graphs
+        propPair.setTb3(DBO.areEquivalentClass(classi, classj));
+
+        // TB4: 1 if the class in Gi is a subclass of the class in Gj
+        propPair.setTb4(DBO.isSubClass(classi, classj));
+        // TB5: vice versa
+        propPair.setTb5(DBO.isSubClass(classj, classi));
+
+
+        String domainPi = getPrefixedProperty(DBO.getDomain(propPair.getPropA()));
+        String domainPj = getPrefixedProperty(DBO.getDomain(propPair.getPropB()));
+        String rangePi = getPrefixedProperty(DBO.getRange(propPair.getPropA()));
+        String rangePj = getPrefixedProperty(DBO.getRange(propPair.getPropB()));
+
+        // TB6: Domain of Pi and Pj are the same => 1
+        propPair.setTb6(DBO.areEquivalentProperties(domainPi, domainPj));
+
+        // TB7: 1 if domain(Pi) subclass of domain(Pj)
+        propPair.setTb7(DBO.isSubClass(domainPi, domainPj));
+
+        // TB8: Vice versa
+        propPair.setTb8(DBO.isSubClass(domainPj, domainPi));
+
+
+
+        // TB9: Range of Pi and Pj are the same => 1
+        propPair.setTb9(DBO.areEquivalentProperties(rangePi, rangePj));
+
+        // TB10: 1 if range(Pi) subclass of range(Pj)
+        propPair.setTb10(DBO.isSubClass(rangePi, rangePj));
+
+        // TB11: vice versa
+        propPair.setTb11(DBO.isSubClass(rangePj, rangePi));
+
+
+    }
+
+    public static String getClass(String graph, String infobox) {
 
         StringBuffer sb = new StringBuffer();
         sb.append("PREFIX rr: <http://www.w3.org/ns/r2rml#> ");
@@ -426,7 +503,7 @@ public class InconsistentMappings {
         }
     }
 
-    private static String getPrefixedProperty(String property) {
+    public static String getPrefixedProperty(String property) {
         property = property.replace("http://dbpedia.org/ontology/", "dbo:");
         property = property.replace("http://www.w3.org/2001/XMLSchema#", "xsd:");
         property = property.replace("http://www.w3.org/2002/07/owl#", "owl:");
