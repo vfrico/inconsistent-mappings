@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntProperty;
 import com.hp.hpl.jena.ontology.OntResource;
+import com.hp.hpl.jena.query.QueryParseException;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
@@ -35,9 +36,10 @@ import static com.hp.hpl.jena.ontology.OntModelSpec.OWL_MEM_MICRO_RULE_INF;
  * @since 1.0.0
  */
 public class DBO {
+    static String graph = "http://dbpedia.org/ontology";
 
 //    private static final String SPARQL_Endpoint = "http://4v.dia.fi.upm.es:8890/sparql";
-    private static final String SPARQL_Endpoint = "http://35.233.98.119:8890/sparql";
+    private static final String SPARQL_Endpoint = "http://130.211.101.55:8890/sparql";
 //    private static final String DBO_GRAGH = "http://dbpedia.org/o/201604";
 
 //    OntModel inf;
@@ -49,72 +51,101 @@ public class DBO {
     }
 
     public static boolean isSubClass(String classA, String classB) {
-
+        if (classA.trim().equals("") || classB.trim().equals("")) {
+            System.out.println("Alguna de las clases está vacía: classA="+classA+" y classB="+classB);
+            return false;
+        }
         String query = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
                 "PREFIX dbo: <http://dbpedia.org/ontology/> " +
                 "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> " +
                 "PREFIX foaf: <http://xmlns.com/foaf/0.1/> " +
                 "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
                 "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
-                "ask { graph <http://dbpedia.org/ontology> " +
-                "{ " + classA + " rdfs:subClassOf* " + classB + " } }";
+                buildAskQuery(graph, classA, "rdfs:subClassOf", classB);
 
-        //System.out.println(query);
+        System.out.println(query);
 
-        return SparqlUtils.ask(query, SPARQL_Endpoint);
-
+        return execAskSparql(query);
     }
 
     public static boolean isSubProperty(String propA, String propB) {
-
+        if (propA.trim().equals("") || propB.trim().equals("")) {
+            System.out.println("Alguna de las propiedades está vacía: PropA="+propA+" y propB="+propB);
+            return false;
+        }
         String query = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
                 "PREFIX dbo: <http://dbpedia.org/ontology/> " +
                 "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> " +
                 "PREFIX foaf: <http://xmlns.com/foaf/0.1/> " +
                 "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
                 "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
-                "ask { graph <http://dbpedia.org/ontology> " +
-                "{ " + propA + " rdfs:subPropertyOf* " + propB + " } }";
+                buildAskQuery(graph, propA, "rdfs:subPropertyOf", propB);
 
-        //System.out.println(query);
+        System.out.println(query);
 
-        return SparqlUtils.ask(query, SPARQL_Endpoint);
+        return execAskSparql(query);
 
+    }
+
+    public static String buildAskQuery(String graph, String subject, String predicate, String object) {
+        return "ask { graph <"+graph+"> " +
+                "{ " + subject + " "+predicate+" " + object + " } }";
+//        return  " ASK FROM <"+graph+"> WHERE { { " +
+//                "SELECT  ?tt1  ?tt2 " +
+//                "WHERE {" +
+//                "  ?tt1 "+predicate+" ?tt2 .  } OFFSET  0 }  " +
+//                "OPTION ( TRANSITIVE, T_NO_CYCLES, T_MIN  0, T_IN ( ?tt1 ), T_OUT ( ?tt2 )) " +
+//                "FILTER (?tt1 =  <"+subject+">) FILTER (?tt2 =  <"+object+">) }";
     }
 
     public static boolean areEquivalentClass(String classA, String classB) {
-
+        if (classA.trim().equals("") || classB.trim().equals("")) {
+            System.out.println("Alguna de las clases está vacía: classA="+classA+" y classB="+classB);
+            return false;
+        }
+        String graph = "http://dbpedia.org/ontology";
         String query = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
                 "PREFIX dbo: <http://dbpedia.org/ontology/> " +
                 "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> " +
                 "PREFIX foaf: <http://xmlns.com/foaf/0.1/> " +
                 "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
                 "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
-                "ask { graph <http://dbpedia.org/ontology> " +
-                "{ " + classA + " owl:equivalentClass* " + classB + " } }";
+                buildAskQuery(graph, classA, " owl:equivalentClass* ", classB);
+//                "ask { graph <http://dbpedia.org/ontology> " +
+//                "{ " + classA + " owl:equivalentClass* " + classB + " } }";
 
-        //System.out.println(query);
+        System.out.println(query);
 
-        return SparqlUtils.ask(query, SPARQL_Endpoint);
-
+        return execAskSparql(query);
     }
     public static boolean areEquivalentProperties(String propA, String propB) {
-
+        if (propA.trim().equals("") || propB.trim().equals("")) {
+            System.out.println("Alguna de las propiedades está vacía: PropA="+propA+" y propB="+propB);
+            return false;
+        }
+        String prop = "owl:equivalentProperty";
         String query = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
                 "PREFIX dbo: <http://dbpedia.org/ontology/> " +
                 "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> " +
                 "PREFIX foaf: <http://xmlns.com/foaf/0.1/> " +
                 "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
                 "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
-                "ask { graph <http://dbpedia.org/ontology> " +
-                "{ " + propA + " owl:equivalentProperty* " + propB + " } }";
+                buildAskQuery(graph, propA, prop, propB);
 
-        //System.out.println(query);
+        System.out.println(query);
 
-        return SparqlUtils.ask(query, SPARQL_Endpoint);
-
+        return execAskSparql(query);
     }
 
+    private static boolean execAskSparql(String query) {
+        try {
+            return SparqlUtils.ask(query, SPARQL_Endpoint);
+        } catch (QueryParseException qpe) {
+            System.out.println("Query "+query+" error:"+qpe+" \nReturn false");
+            qpe.printStackTrace();
+            return false;
+        }
+    }
 
 
     public static String getDomain(String property) {

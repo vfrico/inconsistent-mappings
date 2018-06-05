@@ -21,35 +21,35 @@ public class AddTBProps {
 
     public static void main(String[] args) {
         Path iPath = FileSystems.getDefault().getPath("/home/vfrico/anotaciones.csv");
-        Path oPath = FileSystems.getDefault().getPath("/home/vfrico/en-es-lit.csv");
+        Path oPath = FileSystems.getDefault().getPath("/home/vfrico/anotados.csv");
 
         try {
             writer = Files.newBufferedWriter(oPath, Charset.defaultCharset(),
                     StandardOpenOption.CREATE);
-
+            printCSVTitles();
             BufferedReader br = Files.newBufferedReader(iPath);
 
             br.lines().forEach((line) -> {
 
                 String[] campos = line.split(",");
-                String templateA = campos[0];
-                String templateB = campos[2];
+                String templateA = campos[0].trim();
+                String templateB = campos[2].trim();
 
-                String attributeA = campos[1];
-                String attributeB = campos[3];
+                String attributeA = campos[1].trim();
+                String attributeB = campos[3].trim();
 
-                String propA = campos[4];
-                String propB = campos[5];
+                String propA = campos[4].trim();
+                String propB = campos[5].trim();
 
-                String sM1 = campos[19];
-                String sM2 = campos[20];
-                String sM3 = campos[21];
-                String sM4a = campos[22];
-                String sM4b = campos[23];
-                String sM5a = campos[24];
-                String sM5b = campos[25];
+                String sM1 = campos[19].trim();
+                String sM2 = campos[20].trim();
+                String sM3 = campos[21].trim();
+                String sM4a = campos[22].trim();
+                String sM4b = campos[23].trim();
+                String sM5a = campos[24].trim();
+                String sM5b = campos[25].trim();
 
-                String anotacion = campos[6];
+                String anotacion = campos[6].trim();
                 long m1 = 0;
                 long m2 = 0;
                 long m3 = 0;
@@ -72,10 +72,14 @@ public class AddTBProps {
                         propA, propB, m1);
                 entry.setAnotacion(anotacion);
                 entry.setM2(m2);
-                entry.setM3
+                entry.setM3(m3);
+                entry.setM4a(m4a);
+                entry.setM4b(m4b);
+                entry.setM5a(m5a);
+                entry.setM5b(m5b);
             //                System.out.println(Arrays.toString(campos));
                 System.out.println(entry);
-
+                escribeLinea(entry);
             });
 
 
@@ -85,7 +89,7 @@ public class AddTBProps {
         }
     }
 
-    public void printCSVTitles() {
+    public static void printCSVTitles() {
         try {
             writer.write("Template A"
                     + ", " + "Attribute A"
@@ -93,22 +97,22 @@ public class AddTBProps {
                     + ", " + "Attribute B"
                     + ", " + "Property A"
                     + ", " + "Property B"
-                    + ", " + "Anotacion"
                     + ", " + "Class A"
                     + ", " + "Class B"
+                    + ", " + "Anotacion"
                     + ", " + "Domain Property A"
                     + ", " + "Domain Property B"
                     + ", " + "Range Property A"
                     + ", " + "Range Property B"
-                    + ", " + "M1/M4"
-                    + ", " + "M2/M4"
-                    + ", " + "M3a/M5a"
-                    + ", " + "M3b/M5b"
-                    + ", " + "M4"
+                    + ", " + "C1" // M1/M4
+                    + ", " + "C2" // M2/M4
+                    + ", " + "C3a" // M3a/M5a
+                    + ", " + "C3b" // M3b/M5b
+                    + ", " + "M3" // M4
                     + ", " + "M1"
                     + ", " + "M2"
-                    + ", " + "M3a"
-                    + ", " + "M3b"
+                    + ", " + "M4a" //M4a
+                    + ", " + "M4b" //M4b
                     + ", " + "M5a"
                     + ", " + "M5b"
                     + ", " + "TB1"
@@ -131,9 +135,15 @@ public class AddTBProps {
 
     }
 
-    public void escribeLinea(PropPair propPair) {
+    public static void escribeLinea(PropPair propPair) {
         // Configure TB properties
-        InconsistentMappings.fillTBProperties(propPair);
+        try {
+            InconsistentMappings.fillTBProperties(propPair);
+        } catch (Exception exc) {
+            System.out.println("Error on collecting metrics: "+exc);
+            exc.printStackTrace();
+            return;
+        }
 
 
             try {
@@ -141,24 +151,24 @@ public class AddTBProps {
                         + ", " + propPair.getAttributeA()
                         + ", " + propPair.getTemplateB()
                         + ", " + propPair.getAttributeB()
-                        + ", " + propPair.getAnotacion()//Anotacion
                         + ", " + InconsistentMappings.getPrefixedProperty(propPair.getPropA())
                         + ", " + InconsistentMappings.getPrefixedProperty(propPair.getPropB())
                         + ", " + InconsistentMappings.getClass(InconsistentMappings.classGraph1, InconsistentMappings.infoboxPrefix1 + propPair.getTemplateA())
                         + ", " + InconsistentMappings.getClass(InconsistentMappings.classGraph2, InconsistentMappings.infoboxPrefix2 + propPair.getTemplateB())
+                        + ", " + propPair.getAnotacion()
                         + ", " + InconsistentMappings.getPrefixedProperty(DBO.getDomain(propPair.getPropA()))
                         + ", " + InconsistentMappings.getPrefixedProperty(DBO.getDomain(propPair.getPropB()))
                         + ", " + InconsistentMappings.getPrefixedProperty(DBO.getRange(propPair.getPropA()))
                         + ", " + InconsistentMappings.getPrefixedProperty(DBO.getRange(propPair.getPropB()))
-                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM1()) / propPair.getM4())
-                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM2()) / propPair.getM4())
-                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM3a()) / propPair.getM5a())
-                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM3b()) / propPair.getM5b())
-                        + ", " + propPair.getM4()
+                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM2()) / propPair.getM1())
+                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM3()) / propPair.getM1())
+                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM4a()) / propPair.getM5a())
+                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM4b()) / propPair.getM5b())
+                        + ", " + propPair.getM3()
                         + ", " + propPair.getM1()
                         + ", " + propPair.getM2()
-                        + ", " + propPair.getM3a()
-                        + ", " + propPair.getM3b()
+                        + ", " + propPair.getM4a()
+                        + ", " + propPair.getM4b()
                         + ", " + propPair.getM5a()
                         + ", " + propPair.getM5b()
                         + ", " + propPair.getTb1()

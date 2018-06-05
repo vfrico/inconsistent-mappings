@@ -43,6 +43,7 @@ public class SparqlUtils {
             System.out.println("Query :" + queryString);
             throw e;
         }
+
     }
 
     public static List<Map<String, RDFNode>> executeQueryForList(String queryString, String serviceEndpoint, Set<String> vars) {

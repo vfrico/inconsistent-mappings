@@ -40,7 +40,7 @@ import java.util.concurrent.ForkJoinPool;
 public class InconsistentMappings {
 
 //    public static final String SPARQL_ENDPOINT = "http://4v.dia.fi.upm.es:8890/sparql";
-    public static final String SPARQL_ENDPOINT = "http://35.233.98.119:8890/sparql";
+    public static final String SPARQL_ENDPOINT = "http://130.211.101.55:8890/sparql";
     //public static final String SPARQL_ENDPOINT = "http://172.17.0.1:8890/sparql";
 
     private static final String Q1_PATH = "src/main/resources/mappings/q1.rq";
@@ -71,6 +71,15 @@ public class InconsistentMappings {
             logger.error("Error loading the queries", ioe);
             throw new IllegalStateException("Error loading the query: " + ioe.getMessage(), ioe);
         }
+        graph1 =  "http://dbpedia.org/";
+        graph2 =  "http://es.dbpedia.org/";
+        rGraph1 = "http://dbpedia.org/r";
+        rGraph2 = "http://es.dbpedia.org/r";
+        classGraph1 = "http://dbpedia.org/rml";
+        classGraph2 = "http://es.dbpedia.org/rml";
+
+        infoboxPrefix1 = "http://mappings.dbpedia.org/server/mappings/en/";
+        infoboxPrefix2 = "http://mappings.dbpedia.org/server/mappings/es/";
     }
 
     public static String graph1;
@@ -96,15 +105,7 @@ public class InconsistentMappings {
     //Initialize parameters
     private void init() throws IOException {
 
-        graph1 =  "http://dbpedia.org/";
-        graph2 =  "http://es.dbpedia.org/";
-        rGraph1 = "http://dbpedia.org/r";
-        rGraph2 = "http://es.dbpedia.org/r";
-        classGraph1 = "http://dbpedia.org/rml";
-        classGraph2 = "http://es.dbpedia.org/rml";
 
-        infoboxPrefix1 = "http://mappings.dbpedia.org/server/mappings/en/";
-        infoboxPrefix2 = "http://mappings.dbpedia.org/server/mappings/es/";
 
         Path path = FileSystems.getDefault().getPath("/home/vfrico/en-es-lit.csv");
 
@@ -127,15 +128,15 @@ public class InconsistentMappings {
                     + ", " + "Domain Property B"
                     + ", " + "Range Property A"
                     + ", " + "Range Property B"
-                    + ", " + "M1/M4"
-                    + ", " + "M2/M4"
-                    + ", " + "M3a/M5a"
-                    + ", " + "M3b/M5b"
-                    + ", " + "M4"
+                    + ", " + "C1" // M1/M4
+                    + ", " + "C2" // M2/M4
+                    + ", " + "C3a" // M3a/M5a
+                    + ", " + "C3b" // M3b/M5b
+                    + ", " + "M3" // M4
                     + ", " + "M1"
                     + ", " + "M2"
-                    + ", " + "M3a"
-                    + ", " + "M3b"
+                    + ", " + "M4a" //M4a
+                    + ", " + "M4b" //M4b
                     + ", " + "M5a"
                     + ", " + "M5b"
                     + ", " + "TB1"
@@ -285,7 +286,7 @@ public class InconsistentMappings {
 
         if (resultsList.size() > 0) {
             long count = resultsList.get("count").asLiteral().getLong();
-            propPair.setM3a(count);
+            propPair.setM4a(count);
         }
 
         q3pss.setIri("graph", graph2);
@@ -303,7 +304,7 @@ public class InconsistentMappings {
 
         if (resultsList.size() > 0) {
             long count = resultsList.get("count").asLiteral().getLong();
-            propPair.setM3b(count);
+            propPair.setM4b(count);
         }
 
         ParameterizedSparqlString q4pss = new ParameterizedSparqlString();
@@ -331,7 +332,7 @@ public class InconsistentMappings {
 
         if (resultsList.size() > 0) {
             long count = resultsList.get("count").asLiteral().getLong();
-            propPair.setM4(count);
+            propPair.setM3(count);
         }
 
         ParameterizedSparqlString q5pss = new ParameterizedSparqlString();
@@ -395,15 +396,15 @@ public class InconsistentMappings {
                         + ", " + getPrefixedProperty(dbo.getDomain(propPair.getPropB()))
                         + ", " + getPrefixedProperty(dbo.getRange(propPair.getPropA()))
                         + ", " + getPrefixedProperty(dbo.getRange(propPair.getPropB()))
-                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM1()) / propPair.getM4())
-                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM2()) / propPair.getM4())
-                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM3a()) / propPair.getM5a())
-                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM3b()) / propPair.getM5b())
-                        + ", " + propPair.getM4()
+                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM2()) / propPair.getM1())
+                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM3()) / propPair.getM1())
+                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM4a()) / propPair.getM5a())
+                        + ", " + DECIMAL_FORMAT.format(((double) propPair.getM4b()) / propPair.getM5b())
+                        + ", " + propPair.getM3()
                         + ", " + propPair.getM1()
                         + ", " + propPair.getM2()
-                        + ", " + propPair.getM3a()
-                        + ", " + propPair.getM3b()
+                        + ", " + propPair.getM4a()
+                        + ", " + propPair.getM4b()
                         + ", " + propPair.getM5a()
                         + ", " + propPair.getM5b()
                         + ", " + propPair.getTb1()

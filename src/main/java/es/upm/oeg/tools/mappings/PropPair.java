@@ -31,9 +31,9 @@ public class PropPair {
 
     private long m1;
     private long m2;
-    private long m3a;
-    private long m3b;
-    private long m4;
+    private long m3;
+    private long m4a;
+    private long m4b;
     private long m5a;
     private long m5b;
 
@@ -131,32 +131,32 @@ public class PropPair {
         return m2;
     }
 
-    public long getM3a() {
-        return m3a;
+    public long getM3() {
+        return m3;
     }
 
-    public void setM3a(long m3a) {
-        this.m3a = m3a;
+    public void setM3(long m3) {
+        this.m3 = m3;
     }
 
-    public long getM3b() {
-        return m3b;
+    public long getM4a() {
+        return m4a;
     }
 
-    public void setM3b(long m3b) {
-        this.m3b = m3b;
+    public void setM4a(long m4a) {
+        this.m4a = m4b;
     }
 
     public void setM2(long m2) {
         this.m2 = m2;
     }
 
-    public long getM4() {
-        return m4;
+    public long getM4b() {
+        return m4b;
     }
 
-    public void setM4(long m4) {
-        this.m4 = m4;
+    public void setM4b(long m4b) {
+        this.m4b = m4b;
     }
 
     public long getM5a() {
