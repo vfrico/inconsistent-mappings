@@ -144,7 +144,7 @@ public class PropPair {
     }
 
     public void setM4a(long m4a) {
-        this.m4a = m4b;
+        this.m4a = m4a;
     }
 
     public void setM2(long m2) {

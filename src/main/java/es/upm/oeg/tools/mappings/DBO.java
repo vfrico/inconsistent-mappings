@@ -39,11 +39,16 @@ public class DBO {
     static String graph = "http://dbpedia.org/ontology";
 
 //    private static final String SPARQL_Endpoint = "http://4v.dia.fi.upm.es:8890/sparql";
-    private static final String SPARQL_Endpoint = "http://130.211.101.55:8890/sparql";
+    private static final String SPARQL_Endpoint = "http://35.195.180.82:8890/sparql";
 //    private static final String DBO_GRAGH = "http://dbpedia.org/o/201604";
 
 //    OntModel inf;
-
+    private static String PREFIXES = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
+        "PREFIX dbo: <http://dbpedia.org/ontology/> " +
+        "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> " +
+        "PREFIX foaf: <http://xmlns.com/foaf/0.1/> " +
+        "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
+        "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " ;
     public DBO() {
 //        OntModel base = ModelFactory.createOntologyModel( OWL_MEM );
 //        base.read(DBO.class.getClassLoader().getResourceAsStream("mappings/dbpedia.owl"), "RDF/XML" );
@@ -55,13 +60,8 @@ public class DBO {
             System.out.println("Alguna de las clases está vacía: classA="+classA+" y classB="+classB);
             return false;
         }
-        String query = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
-                "PREFIX dbo: <http://dbpedia.org/ontology/> " +
-                "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> " +
-                "PREFIX foaf: <http://xmlns.com/foaf/0.1/> " +
-                "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
-                "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
-                buildAskQuery(graph, classA, "rdfs:subClassOf", classB);
+        String query = PREFIXES + " " +
+                buildAskQuery(graph, classA, "rdfs:subClassOf*", classB);
 
         System.out.println(query);
 
@@ -73,13 +73,8 @@ public class DBO {
             System.out.println("Alguna de las propiedades está vacía: PropA="+propA+" y propB="+propB);
             return false;
         }
-        String query = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
-                "PREFIX dbo: <http://dbpedia.org/ontology/> " +
-                "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> " +
-                "PREFIX foaf: <http://xmlns.com/foaf/0.1/> " +
-                "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
-                "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
-                buildAskQuery(graph, propA, "rdfs:subPropertyOf", propB);
+        String query = PREFIXES + " " +
+                buildAskQuery(graph, propA, "rdfs:subPropertyOf*", propB);
 
         System.out.println(query);
 
@@ -88,6 +83,8 @@ public class DBO {
     }
 
     public static String buildAskQuery(String graph, String subject, String predicate, String object) {
+        subject = InconsistentMappings.getPrefixedProperty(subject);
+        object = InconsistentMappings.getPrefixedProperty(object);
         return "ask { graph <"+graph+"> " +
                 "{ " + subject + " "+predicate+" " + object + " } }";
 //        return  " ASK FROM <"+graph+"> WHERE { { " +
@@ -104,15 +101,8 @@ public class DBO {
             return false;
         }
         String graph = "http://dbpedia.org/ontology";
-        String query = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
-                "PREFIX dbo: <http://dbpedia.org/ontology/> " +
-                "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> " +
-                "PREFIX foaf: <http://xmlns.com/foaf/0.1/> " +
-                "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
-                "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
+        String query = PREFIXES + " " +
                 buildAskQuery(graph, classA, " owl:equivalentClass* ", classB);
-//                "ask { graph <http://dbpedia.org/ontology> " +
-//                "{ " + classA + " owl:equivalentClass* " + classB + " } }";
 
         System.out.println(query);
 
@@ -123,14 +113,9 @@ public class DBO {
             System.out.println("Alguna de las propiedades está vacía: PropA="+propA+" y propB="+propB);
             return false;
         }
-        String prop = "owl:equivalentProperty";
-        String query = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
-                "PREFIX dbo: <http://dbpedia.org/ontology/> " +
-                "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> " +
-                "PREFIX foaf: <http://xmlns.com/foaf/0.1/> " +
-                "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
-                "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> " +
-                buildAskQuery(graph, propA, prop, propB);
+
+        String query = PREFIXES + " " +
+                buildAskQuery(graph, propA, "owl:equivalentProperty *", propB);
 
         System.out.println(query);
 
@@ -149,16 +134,17 @@ public class DBO {
 
 
     public static String getDomain(String property) {
-
-        String query = "select ?d { graph <http://dbpedia.org/ontology> { <" + property + "> <http://www.w3.org/2000/01/rdf-schema#domain> ?d } }";
-
+        property = InconsistentMappings.getPrefixedProperty(property);
+        String query = PREFIXES + " " +
+                "select ?d { graph <http://dbpedia.org/ontology> { " + property + " <http://www.w3.org/2000/01/rdf-schema#domain> ?d } }";
+        System.out.println("Query GetDomain: "+query);
         List<RDFNode> domains = SparqlUtils.executeQueryForList(query, SPARQL_Endpoint, "d");
 
         Set<String> domainList = domains.stream()
                 .filter(d -> d.isURIResource())
                 .map(s -> s.asResource().getURI())
                 .collect(Collectors.toSet());
-
+        System.out.println("Dominio: "+domainList);
         return Joiner.on(",").join(domainList);
 
 //        Property p = inf.getProperty(property);
@@ -178,8 +164,9 @@ public class DBO {
     }
 
     public static String getRange(String property) {
-
-        String query = "select ?r { graph <http://dbpedia.org/ontology> { <" + property + "> <http://www.w3.org/2000/01/rdf-schema#range> ?r } }";
+        property = InconsistentMappings.getPrefixedProperty(property);
+        String query = PREFIXES + " " +
+                "select ?r { graph <http://dbpedia.org/ontology> { " + property + " <http://www.w3.org/2000/01/rdf-schema#range> ?r } }";
 
         List<RDFNode> ranges = SparqlUtils.executeQueryForList(query, SPARQL_Endpoint, "r");
 

@@ -108,9 +108,9 @@ public class AddTBProps {
                     + ", " + "C2" // M2/M4
                     + ", " + "C3a" // M3a/M5a
                     + ", " + "C3b" // M3b/M5b
-                    + ", " + "M3" // M4
-                    + ", " + "M1"
+                    + ", " + "M1" // M4
                     + ", " + "M2"
+                    + ", " + "M3"
                     + ", " + "M4a" //M4a
                     + ", " + "M4b" //M4b
                     + ", " + "M5a"
@@ -138,6 +138,8 @@ public class AddTBProps {
     public static void escribeLinea(PropPair propPair) {
         // Configure TB properties
         try {
+            propPair = InconsistentMappings.metricas(propPair);
+            if (propPair == null) throw new Exception("empty propPair");
             InconsistentMappings.fillTBProperties(propPair);
         } catch (Exception exc) {
             System.out.println("Error on collecting metrics: "+exc);
@@ -164,9 +166,9 @@ public class AddTBProps {
                         + ", " + DECIMAL_FORMAT.format(((double) propPair.getM3()) / propPair.getM1())
                         + ", " + DECIMAL_FORMAT.format(((double) propPair.getM4a()) / propPair.getM5a())
                         + ", " + DECIMAL_FORMAT.format(((double) propPair.getM4b()) / propPair.getM5b())
-                        + ", " + propPair.getM3()
                         + ", " + propPair.getM1()
                         + ", " + propPair.getM2()
+                        + ", " + propPair.getM3()
                         + ", " + propPair.getM4a()
                         + ", " + propPair.getM4b()
                         + ", " + propPair.getM5a()

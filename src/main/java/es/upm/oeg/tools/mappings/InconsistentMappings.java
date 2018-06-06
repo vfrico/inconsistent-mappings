@@ -40,7 +40,7 @@ import java.util.concurrent.ForkJoinPool;
 public class InconsistentMappings {
 
 //    public static final String SPARQL_ENDPOINT = "http://4v.dia.fi.upm.es:8890/sparql";
-    public static final String SPARQL_ENDPOINT = "http://130.211.101.55:8890/sparql";
+    public static final String SPARQL_ENDPOINT = "http://35.195.180.82:8890/sparql";
     //public static final String SPARQL_ENDPOINT = "http://172.17.0.1:8890/sparql";
 
     private static final String Q1_PATH = "src/main/resources/mappings/q1.rq";
@@ -220,12 +220,9 @@ public class InconsistentMappings {
     }
 
 
-    private void collectMetrics(PropPair propPair) {
-
-        Thread.currentThread().setName("collect-metrics-" + getPrefixedProperty(propPair.getPropA())
-                + "-"+ getPrefixedProperty(propPair.getPropB()));
-
-        DBO dbo = new DBO();
+    public static PropPair metricas(PropPair propPair) {
+        propPair.setPropA(getFullProperty(propPair.getPropA()));
+        propPair.setPropB(getFullProperty(propPair.getPropB()));
 
         logger.info("Collecting metrics for {}, {}, {}, {}",
                 getPrefixedProperty(propPair.getPropA()),
@@ -254,11 +251,13 @@ public class InconsistentMappings {
                     Sets.newHashSet("count"));
         } catch (Exception e) {
             logger.error("Error executing query: {}\n{}", e.getMessage(), q2, e);
-            return;
+            return null;
         }
 
         if (resultsList.size() > 0) {
             long count = resultsList.get("count").asLiteral().getLong();
+            logger.info("Query2 : "+q2);
+            logger.info("M2 es: "+count);
             propPair.setM2(count);
         }
 
@@ -280,12 +279,13 @@ public class InconsistentMappings {
                     Sets.newHashSet("count"));
         } catch (Exception e) {
             logger.error("Error executing query: {}\n{}", e.getMessage(), q3a, e);
-            return;
+            return null;
         }
 
 
         if (resultsList.size() > 0) {
             long count = resultsList.get("count").asLiteral().getLong();
+            logger.info("M4a es:"+count);
             propPair.setM4a(count);
         }
 
@@ -298,7 +298,7 @@ public class InconsistentMappings {
                     Sets.newHashSet("count"));
         } catch (Exception e) {
             logger.error("Error executing query: {}, \n{}", e.getMessage(), q3b, e);
-            return;
+            return null;
         }
 
 
@@ -326,7 +326,7 @@ public class InconsistentMappings {
                     Sets.newHashSet("count"));
         } catch (Exception e) {
             logger.error("Error executing query: {}\n{}", e.getMessage(), q4, e);
-            return;
+            return null;
         }
 
 
@@ -353,7 +353,7 @@ public class InconsistentMappings {
                     Sets.newHashSet("count"));
         } catch (Exception e) {
             logger.error("Error executing query: {}\n{}", e.getMessage(), q5a, e);
-            return;
+            return null;
         }
 
 
@@ -370,7 +370,7 @@ public class InconsistentMappings {
                     Sets.newHashSet("count"));
         } catch (Exception e) {
             logger.error("Error executing query: {}\n{}", e.getMessage(), q5a, e);
-            return;
+            return null;
         }
 
 
@@ -378,6 +378,17 @@ public class InconsistentMappings {
             long count = resultsList.get("count").asLiteral().getLong();
             propPair.setM5b(count);
         }
+        return propPair;
+    }
+
+    private void collectMetrics(PropPair propPair) {
+        DBO dbo = new DBO();
+
+        propPair = metricas(propPair);
+
+        Thread.currentThread().setName("collect-metrics-" + getPrefixedProperty(propPair.getPropA())
+                + "-"+ getPrefixedProperty(propPair.getPropB()));
+
 
         // Configure TB properties
         fillTBProperties(propPair);
@@ -448,10 +459,10 @@ public class InconsistentMappings {
         propPair.setTb5(DBO.isSubClass(classj, classi));
 
 
-        String domainPi = getPrefixedProperty(DBO.getDomain(propPair.getPropA()));
-        String domainPj = getPrefixedProperty(DBO.getDomain(propPair.getPropB()));
-        String rangePi = getPrefixedProperty(DBO.getRange(propPair.getPropA()));
-        String rangePj = getPrefixedProperty(DBO.getRange(propPair.getPropB()));
+        String domainPi = getPrefixedProperty(DBO.getDomain(pi));
+        String domainPj = getPrefixedProperty(DBO.getDomain(pj));
+        String rangePi = getPrefixedProperty(DBO.getRange(pi));
+        String rangePj = getPrefixedProperty(DBO.getRange(pj));
 
         // TB6: Domain of Pi and Pj are the same => 1
         propPair.setTb6(DBO.areEquivalentProperties(domainPi, domainPj));
@@ -508,7 +519,19 @@ public class InconsistentMappings {
         property = property.replace("http://dbpedia.org/ontology/", "dbo:");
         property = property.replace("http://www.w3.org/2001/XMLSchema#", "xsd:");
         property = property.replace("http://www.w3.org/2002/07/owl#", "owl:");
+        property = property.replace("http://www.w3.org/2003/01/geo/wgs84_pos#", "geo:");
+        property = property.replace("http://www.w3.org/2000/01/rdf-schema#", "rdfs:");
         return property.replace("http://xmlns.com/foaf/0.1/", "foaf:");
+    }
+
+    public static String getFullProperty(String property) {
+        property = property.replace( "dbo:", "http://dbpedia.org/ontology/");
+        property = property.replace("xsd:","http://www.w3.org/2001/XMLSchema#");
+        property = property.replace("owl:", "http://www.w3.org/2002/07/owl#");
+        property = property.replace("rdfs:", "http://www.w3.org/2000/01/rdf-schema#");
+        property = property.replace("geo:", "http://www.w3.org/2003/01/geo/wgs84_pos#");
+        property = property.replace("rdfs:", "http://www.w3.org/2000/01/rdf-schema#");
+        return property.replace( "foaf:", "http://xmlns.com/foaf/0.1/");
     }
 
     public static String readFile(String path, Charset encoding)
