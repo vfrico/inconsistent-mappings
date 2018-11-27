@@ -1,16 +1,22 @@
 package es.upm.oeg.tools.mappings;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 
-import com.hp.hpl.jena.query.ParameterizedSparqlString;
-import com.hp.hpl.jena.rdf.model.RDFNode;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.text.DecimalFormat;
@@ -36,23 +42,27 @@ import java.util.concurrent.ForkJoinPool;
  *
  * @author Nandana Mihindukulasooriya
  * @since 1.0.0
+ *
  */
 public class InconsistentMappings {
 
 //    public static final String SPARQL_ENDPOINT = "http://4v.dia.fi.upm.es:8890/sparql";
-    public static final String SPARQL_ENDPOINT = "http://35.195.180.82:8890/sparql";
+//    public static final String SPARQL_ENDPOINT = "http://35.195.180.82:8890/sparql";
+//    public static final String SPARQL_ENDPOINT = "http://localhost:8890/sparql";
+    private static String SPARQL_ENDPOINT = "http://vfrico.oeg-upm.net/sparql";
     //public static final String SPARQL_ENDPOINT = "http://172.17.0.1:8890/sparql";
 
-    private static final String Q1_PATH = "src/main/resources/mappings/q1.rq";
-    private static final String Q2_PATH = "src/main/resources/mappings/q2.rq";
-    private static final String Q3_PATH = "src/main/resources/mappings/q3.rq";
-    private static final String Q4_PATH = "src/main/resources/mappings/q4.rq";
-    private static final String Q5_PATH = "src/main/resources/mappings/q5.rq";
-    private static final String Q1_String;
-    private static final String Q2_String;
-    private static final String Q3_String;
-    private static final String Q4_String;
-    private static final String Q5_String;
+    private static final String SRC_PATH = "main/resources/mappings/";
+    private static final String Q1_PATH = "mappings/q1.rq";
+    private static final String Q2_PATH = "mappings/q2.rq";
+    private static final String Q3_PATH = "mappings/q3.rq";
+    private static final String Q4_PATH = "mappings/q4.rq";
+    private static final String Q5_PATH = "mappings/q5.rq";
+    private static String Q1_String;
+    private static String Q2_String;
+    private static String Q3_String;
+    private static String Q4_String;
+    private static String Q5_String;
 
 
     private static final DecimalFormatSymbols symbolsDE_DE = DecimalFormatSymbols.getInstance(Locale.US);
@@ -61,16 +71,6 @@ public class InconsistentMappings {
     private static final Logger logger = LoggerFactory.getLogger(InconsistentMappings.class);
 
     static {
-        try {
-            Q1_String = readFile(Q1_PATH, Charset.defaultCharset());
-            Q2_String = readFile(Q2_PATH, Charset.defaultCharset());
-            Q3_String = readFile(Q3_PATH, Charset.defaultCharset());
-            Q4_String = readFile(Q4_PATH, Charset.defaultCharset());
-            Q5_String = readFile(Q5_PATH, Charset.defaultCharset());
-        } catch (IOException ioe) {
-            logger.error("Error loading the queries", ioe);
-            throw new IllegalStateException("Error loading the query: " + ioe.getMessage(), ioe);
-        }
         graph1 =  "http://dbpedia.org/";
         graph2 =  "http://es.dbpedia.org/";
         rGraph1 = "http://dbpedia.org/r";
@@ -95,19 +95,60 @@ public class InconsistentMappings {
 
     final Object lock = new Object();
 
-    public static void main(String[] args) throws Exception {
-
-        InconsistentMappings props = new InconsistentMappings();
-        props.process();
+    public InconsistentMappings() {
 
     }
 
+    public InconsistentMappings(String sparqlEndpoint) {
+        SPARQL_ENDPOINT = sparqlEndpoint;
+
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        Options options = new Options();
+        options.addOption("sparql", true, "Select SPARQL endpoint");
+        options.addOption("outcsv", true, "CSV output file (absolute path)");
+
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = parser.parse( options, args);
+
+        InconsistentMappings props;
+        if (cmd.hasOption("sparql")) {
+            String userSparqlEndpoint = cmd.getOptionValue("sparql");
+            props = new InconsistentMappings(userSparqlEndpoint);
+        } else {
+            props = new InconsistentMappings();
+        }
+
+        if (cmd.hasOption("outcsv")) {
+            String csvfile = cmd.getOptionValue("outcsv");
+            props.process(csvfile);
+        } else {
+            // No file specified
+            System.out.printf("Missing -outcsv option. Exiting now.");
+//            System.exit(-1);
+            props.process("/home/vfrico/en-es.lit.csv");
+        }
+    }
+
     //Initialize parameters
-    private void init() throws IOException {
+    private void init(String csvPath) throws IOException {
 
+        try {
+            Q1_String = readFile(Q1_PATH, Charset.defaultCharset());
+            Q2_String = readFile(Q2_PATH, Charset.defaultCharset());
+            Q3_String = readFile(Q3_PATH, Charset.defaultCharset());
+            Q4_String = readFile(Q4_PATH, Charset.defaultCharset());
+            Q5_String = readFile(Q5_PATH, Charset.defaultCharset());
+        } catch (IOException ioe) {
+            logger.error("Error loading the queries", ioe);
+            throw new IllegalStateException("Error loading the query: " + ioe.getMessage(), ioe);
+        }
 
+        Path path = FileSystems.getDefault().getPath(csvPath);
 
-        Path path = FileSystems.getDefault().getPath("/home/vfrico/en-es-lit.csv");
+        logger.trace("Escribiendo en: "+path);
 
         writer = Files.newBufferedWriter(path, Charset.defaultCharset(),
                 StandardOpenOption.CREATE);
@@ -158,13 +199,15 @@ public class InconsistentMappings {
         }
 
     }
-
+    public static String getSparqlEndpoint() {
+        return SPARQL_ENDPOINT;
+    }
     //Extract the data
-    public void process() throws Exception {
+    public void process(String csvPath) throws Exception {
 
         //Initialize the parameters
         //TODO config as command line parameters
-        init();
+        init(csvPath);
 
         //Extract the property pairs
         List<PropPair> propPairList = extractPropPairs();
@@ -194,14 +237,13 @@ public class InconsistentMappings {
         pss.setIri("rGraph2", rGraph2);
         String q1 = pss.toString();
 
-        System.out.println(q1);
-
         logger.debug("Query 1:\n{}", q1);
 
         List<Map<String, RDFNode>> resultsMap = SparqlUtils.executeQueryForList(q1, SPARQL_ENDPOINT,
                 Sets.newHashSet("p1", "p2", "t1", "t2", "a1", "a2", "count"));
 
         for (Map<String, RDFNode> map : resultsMap) {
+            logger.info("Mapa: {}", map);
             String t1 = map.get("t1").asLiteral().getString();
             String t2 = map.get("t2").asLiteral().getString();
             String p1 = map.get("p1").asResource().getURI();
@@ -534,12 +576,16 @@ public class InconsistentMappings {
         return property.replace( "foaf:", "http://xmlns.com/foaf/0.1/");
     }
 
-    public static String readFile(String path, Charset encoding)
+    public String readFile(String path, Charset encoding)
             throws IOException {
-
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        //byte[] encoded = ByteStreams.toByteArray(IOUtils.class.getClassLoader().getResourceAsStream(path));
-        return new String(encoded, encoding);
+        logger.info("Read file resource: "+path);
+        InputStream in = this.getClass().getResourceAsStream("/" + path);
+        logger.info("InputStream: "+in);
+        String content = FileUtils.readWholeFileAsUTF8(in);
+        return content;
+//        byte[] encoded = Files.readAllBytes(Paths.get(path));
+//        //byte[] encoded = ByteStreams.toByteArray(IOUtils.class.getClassLoader().getResourceAsStream(path));
+//        return new String(encoded, encoding);
 
     }
 

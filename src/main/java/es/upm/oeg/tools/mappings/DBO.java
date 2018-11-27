@@ -1,21 +1,14 @@
 package es.upm.oeg.tools.mappings;
 
 import com.google.common.base.Joiner;
-import com.hp.hpl.jena.ontology.OntModel;
-import com.hp.hpl.jena.ontology.OntProperty;
-import com.hp.hpl.jena.ontology.OntResource;
-import com.hp.hpl.jena.query.QueryParseException;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFNode;
+import org.apache.jena.query.QueryParseException;
+import org.apache.jena.rdf.model.RDFNode;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.hp.hpl.jena.ontology.OntModelSpec.OWL_MEM;
-import static com.hp.hpl.jena.ontology.OntModelSpec.OWL_MEM_MICRO_RULE_INF;
 
 /**
  * Copyright 2014-2018 Ontology Engineering Group, Universidad Politécnica de Madrid, Spain
@@ -39,9 +32,10 @@ public class DBO {
     static String graph = "http://dbpedia.org/ontology";
 
 //    private static final String SPARQL_Endpoint = "http://4v.dia.fi.upm.es:8890/sparql";
-    private static final String SPARQL_Endpoint = "http://35.195.180.82:8890/sparql";
+//    private static final String SPARQL_Endpoint = "http://vfrico.oeg-upm.net/sparql";
+//    private static final String SPARQL_Endpoint = "http://localhost:8890/sparql";
 //    private static final String DBO_GRAGH = "http://dbpedia.org/o/201604";
-
+    private static final String SPARQL_Endpoint = InconsistentMappings.getSparqlEndpoint();
 //    OntModel inf;
     private static String PREFIXES = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
         "PREFIX dbo: <http://dbpedia.org/ontology/> " +
