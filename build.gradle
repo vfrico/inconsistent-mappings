@@ -11,6 +11,18 @@ targetCompatibility = 1.8
 repositories {
      maven { url "http://repo.maven.apache.org/maven2" }
 }
+
+sourceSets {
+    main {
+        java {
+            srcDirs= ["src/main/java"]
+        }
+        resources {
+            srcDirs= ["src/main/resources"]
+        }
+    }
+}
+
 dependencies {
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version:'1.7.25'
     compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'

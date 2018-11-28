@@ -105,6 +105,7 @@ public class InconsistentMappings {
     }
 
     public static void main(String[] args) throws Exception {
+        org.apache.jena.query.ARQ.init();
 
         Options options = new Options();
         options.addOption("sparql", true, "Select SPARQL endpoint");
@@ -251,7 +252,7 @@ public class InconsistentMappings {
             String a1 = map.get("a1").asLiteral().getString();
             String a2 = map.get("a2").asLiteral().getString();
             long count = map.get("count").asLiteral().getLong();
-
+            logger.info("Count: "+count);
             PropPair pair = new PropPair(t1, t2, a1, a2, p1, p2, count);
             propPairList.add(pair);
         }
@@ -563,7 +564,12 @@ public class InconsistentMappings {
         property = property.replace("http://www.w3.org/2002/07/owl#", "owl:");
         property = property.replace("http://www.w3.org/2003/01/geo/wgs84_pos#", "geo:");
         property = property.replace("http://www.w3.org/2000/01/rdf-schema#", "rdfs:");
-        return property.replace("http://xmlns.com/foaf/0.1/", "foaf:");
+        property = property.replace("http://xmlns.com/foaf/0.1/", "foaf:");
+        if (property.startsWith("http://") || property.startsWith("https://")) {
+            return "<"+property+">";
+        } else {
+            return property;
+        }
     }
 
     public static String getFullProperty(String property) {

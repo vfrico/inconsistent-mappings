@@ -8,6 +8,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.*;
+import org.apache.jena.rdf.model.LiteralRequiredException;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.impl.LiteralImpl;
 import org.apache.jena.rdf.model.impl.ResourceImpl;
@@ -149,7 +150,7 @@ public class SparqlUtils {
             Query query = QueryFactory.create(queryString);
             QueryEngineHTTP qexec = (QueryEngineHTTP) QueryExecutionFactory.sparqlService(serviceEndpoint, query);
             qexec.setTimeout(6000000l);
-            qexec.setSelectContentType("text/csv");
+//            qexec.setSelectContentType("text/csv;charset=UTF-8");
 //            qexec.setSelectContentType("application/sparql-results+xml");
             ResultSet results = qexec.execSelect();
 
@@ -161,7 +162,11 @@ public class SparqlUtils {
                 for (String var : vars) {
                     if (soln.contains(var)) {
                         String res = soln.get(var).toString();
-                        logger.info("soln.get(var): "+res);
+                        try {
+                            logger.info("soln.get(var): "+res+", - "+soln.get(var).asLiteral().toString());
+                        } catch (LiteralRequiredException lre) {
+                            logger.info("soln.get(var): "+res+", - "+soln.get(var).asResource().toString());
+                        }
                         if (res.startsWith("http://") || res.startsWith("https://")) {
                             resultsMap.put(var, new ResourceImpl(soln.get(var).toString()));
                         } else {
@@ -178,6 +183,7 @@ public class SparqlUtils {
         } catch (Exception exc) {
             logger.warn("Error is: "+exc.getMessage());
             logger.error("Found this error: ", exc);
+            exc.printStackTrace();
             return null;
         }
 
@@ -193,7 +199,7 @@ public class SparqlUtils {
      */
     public static List<RDFNode> executeQueryForList(String queryString, String serviceEndpoint, String var) {
 
-        //logger.debug("Executing query: {}", queryString);
+        logger.debug("Executing query: {}", queryString);
 
         List<RDFNode> resultsList = new ArrayList<>();
 
